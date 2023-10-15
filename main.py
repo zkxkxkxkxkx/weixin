@@ -12,8 +12,8 @@ def get_color():
     get_colors = lambda n: list(map(lambda i: "#" + "%06x" % random.randint(0, 0xFFFFFF), range(n)))
     color_list = get_colors(100)
     return random.choice(color_list)
- 
- 
+
+
 def get_access_token():
     # appId
     app_id = config["app_id"]
@@ -52,6 +52,7 @@ def get_weather(region):
         location_id = response["location"][0]["id"]
     weather_url = "https://devapi.qweather.com/v7/weather/now?location={}&key={}".format(location_id, key)
     response = get(weather_url, headers=headers).json()
+    print(response)
     # 天气
     weather = response["now"]["text"]
     # 当前温度
@@ -59,8 +60,7 @@ def get_weather(region):
     # 风向
     wind_dir = response["now"]["windDir"]
     return weather, temp, wind_dir
- 
- 
+
 def get_birthday(birthday, year, today):
     birthday_year = birthday.split("-")[0]
     # 判断是否为农历生日
@@ -139,7 +139,7 @@ def send_message(to_user, access_token, region_name, weather, temp, wind_dir, no
         "touser": to_user,
         "template_id": config["template_id"],
         "url": "http://weixin.qq.com/download",
-        "topcolor": "#FF0000",
+        "topcolor": get_color(),
         "data": {
             "date": {
                 "value": "{} {}".format(today, week),
@@ -201,7 +201,7 @@ def send_message(to_user, access_token, region_name, weather, temp, wind_dir, no
     else:
         print(response)
  
- 
+
 if __name__ == "__main__":
     try:
         with open("config.txt", encoding="utf-8") as f:
@@ -214,7 +214,7 @@ if __name__ == "__main__":
         print("推送消息失败，请检查配置文件格式是否正确")
         os.system("pause")
         sys.exit(1)
- 
+
     # 获取accessToken
     accessToken = get_access_token()
     # 接收的用户
@@ -224,10 +224,11 @@ if __name__ == "__main__":
     weather, temp, wind_dir = get_weather(region)
     note_ch = config["note_ch"]
     note_en = config["note_en"]
-    if note_ch == "" and note_en == "":
+    if len(note_ch) == 0 :
         # 获取词霸每日金句
         note_ch, note_en = get_ciba()
     # 公众号推送消息
+    print(note_ch, note_en)
     for user in users:
         send_message(user, accessToken, region, weather, temp, wind_dir, note_ch, note_en)
     os.system("pause")
